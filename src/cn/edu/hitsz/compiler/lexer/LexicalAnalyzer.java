@@ -1,17 +1,12 @@
 package cn.edu.hitsz.compiler.lexer;
 
-import cn.edu.hitsz.compiler.NotImplementedException;
 import cn.edu.hitsz.compiler.symtab.SymbolTable;
 import cn.edu.hitsz.compiler.utils.FileUtils;
 
 import java.io.*;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.stream.StreamSupport;
 
