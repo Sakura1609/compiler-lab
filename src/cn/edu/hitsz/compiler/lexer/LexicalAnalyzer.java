@@ -3,10 +3,12 @@ package cn.edu.hitsz.compiler.lexer;
 import cn.edu.hitsz.compiler.symtab.SymbolTable;
 import cn.edu.hitsz.compiler.utils.FileUtils;
 
+import javax.naming.NameNotFoundException;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.StreamSupport;
 
@@ -34,25 +36,36 @@ public class LexicalAnalyzer {
      * @param path 路径
      */
     public void loadFile(String path) {
+        tokens = new ArrayList<>();
         // TODO: 词法分析前的缓冲区实现
         // 可自由实现各类缓冲区
         // 或直接采用完整读入方法
         try {
             String s = Files.readString(Paths.get(path));
-            String[] split = s.split("[ |\r|\n]");
-            tokens = new ArrayList<>();
-            for (int i = 0; i < split.length; i++) {
-                if (split[i] == "") {
+            char[] page = s.toCharArray();
+            ArrayList<String> rowTokens = new ArrayList<>();
+            for (int i = 0; i < page.length; i++) {
+                if (rowTokens == null) {
+                    rowTokens = new ArrayList<>();
+                }
+                if (page[i] == '\r' || page[i] == '\n') {
+                    continue;
+                } else if (page[i] == '=' || page[i] == ';' || page[i] == '+' || page[i] == ',' || page[i] == '-' ||
+                            page[i] == '*' || page[i] == '/' || page[i] == '(' || page[i] == ')') {
+                    if (rowTokens.size() != 0) {
+                        tokens.add(String.join("", rowTokens));
+                    }
+                    tokens.add(Character.toString(page[i]));
+                    rowTokens = null;
+                    continue;
+                } else if (page[i] == ' ') {
+                    if (rowTokens.size() != 0) {
+                        tokens.add(String.join("", rowTokens));
+                    }
+                    rowTokens = null;
                     continue;
                 }
-                char[] cha = split[i].toCharArray();
-                if (cha[cha.length-1] == ';') {
-                    tokens.add(split[i].substring(0, cha.length-1));
-                    tokens.add(";");
-                }
-                else {
-                    tokens.add(split[i]);
-                }
+                rowTokens.add(Character.toString(page[i]));
             }
         } catch (IOException e) {
             System.out.println("readError");
