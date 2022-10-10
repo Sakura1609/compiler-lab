@@ -2,13 +2,12 @@ package cn.edu.hitsz.compiler.parser;
 
 import cn.edu.hitsz.compiler.NotImplementedException;
 import cn.edu.hitsz.compiler.lexer.Token;
-import cn.edu.hitsz.compiler.parser.table.LRTable;
-import cn.edu.hitsz.compiler.parser.table.Production;
-import cn.edu.hitsz.compiler.parser.table.Status;
+import cn.edu.hitsz.compiler.parser.table.*;
 import cn.edu.hitsz.compiler.symtab.SymbolTable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 //TODO: 实验二: 实现 LR 语法分析驱动程序
 
@@ -24,6 +23,9 @@ public class SyntaxAnalyzer {
     private final SymbolTable symbolTable;
     private final List<ActionObserver> observers = new ArrayList<>();
 
+    private ArrayList<Token> tokenList = new ArrayList<>();
+
+    private Status initStatus;
 
     public SyntaxAnalyzer(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
@@ -79,14 +81,16 @@ public class SyntaxAnalyzer {
         // 你可以自行选择要如何存储词法单元, 譬如使用迭代器, 或是栈, 或是干脆使用一个 list 全存起来
         // 需要注意的是, 在实现驱动程序的过程中, 你会需要面对只读取一个 token 而不能消耗它的情况,
         // 在自行设计的时候请加以考虑此种情况
-        throw new NotImplementedException();
+        tokens.forEach(tokenList::add);
+//        throw new NotImplementedException();
     }
 
     public void loadLRTable(LRTable table) {
         // TODO: 加载 LR 分析表
         // 你可以自行选择要如何使用该表格:
         // 是直接对 LRTable 调用 getAction/getGoto, 抑或是直接将 initStatus 存起来使用
-        throw new NotImplementedException();
+        this.initStatus = table.getInit();
+//        throw new NotImplementedException();
     }
 
     public void run() {
@@ -94,6 +98,42 @@ public class SyntaxAnalyzer {
         // 你需要根据上面的输入来实现 LR 语法分析的驱动程序
         // 请分别在遇到 Shift, Reduce, Accept 的时候调用上面的 callWhenInShift, callWhenInReduce, callWhenInAccept
         // 否则用于为实验二打分的产生式输出可能不会正常工作
-        throw new NotImplementedException();
+        Stack<Status> status = new Stack<>();
+        Stack<Symbol> symbols = new Stack<>();
+        status.push(initStatus);
+        for (int i = 0; i < tokenList.size(); i++) {
+            Status s = status.peek();
+            Action a = s.getAction(tokenList.get(i));
+            switch (a.getKind()) {
+                case Shift -> {
+                    final var shiftTo = a.getStatus();
+                    status.push(shiftTo);
+                    symbols.push(new Symbol(tokenList.get(i)));
+                    callWhenInShift(shiftTo, tokenList.get(i));
+                }
+                case Reduce -> {
+                    i--;
+                    final var production = a.getProduction();
+                    int length = production.body().size();
+                    NonTerminal nonTerminal = production.head();
+                    for (int j = 0; j < length; j++) {
+                        status.pop();
+                        symbols.pop();
+                    }
+                    symbols.push(new Symbol(nonTerminal));
+                    final var goTo = status.peek().getGoto(nonTerminal);
+                    status.push(goTo);
+                    callWhenInReduce(goTo, production);
+                }
+                case Accept -> {
+                    callWhenInAccept(s);
+                    System.out.println("Success");
+                }
+                case Error -> {
+                    System.out.println("Failed");
+                }
+            }
+        }
+//        throw new NotImplementedException();
     }
 }

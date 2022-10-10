@@ -85,10 +85,10 @@ public class LexicalAnalyzer {
                 try {
                     Integer.parseInt(tokens.get(i));
                     tokenList.add(Token.normal("IntConst", tokens.get(i)));
-                    System.out.println(tokenList.get(tokenList.size()-1));
+//                    System.out.println(tokenList.get(tokenList.size()-1));
                 } catch (NumberFormatException e) {
                     tokenList.add(Token.normal("id", tokens.get(i)));
-                    System.out.println(tokenList.get(tokenList.size()-1));
+//                    System.out.println(tokenList.get(tokenList.size()-1));
                     if (!symbolTable.has(tokens.get(i))) {
                         symbolTable.add(tokens.get(i));
                     }
@@ -97,7 +97,7 @@ public class LexicalAnalyzer {
                 tokenList.add(Token.simple("Semicolon"));
             } else {
                 tokenList.add(Token.simple(tokens.get(i)));
-                System.out.println(tokenList.get(tokenList.size()-1));
+//                System.out.println(tokenList.get(tokenList.size()-1));
             }
         }
         assert(tokenList.size() != 0);
