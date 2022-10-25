@@ -38,7 +38,9 @@ public class SyntaxAnalyzer {
      */
     public void registerObserver(ActionObserver observer) {
         observers.add(observer);
-        observer.setSymbolTable(symbolTable);
+        for (final var listener : observers) {
+            observer.setSymbolTable(symbolTable);
+        }
     }
 
     /**
@@ -112,7 +114,7 @@ public class SyntaxAnalyzer {
                     callWhenInShift(shiftTo, tokenList.get(i));
                 }
                 case Reduce -> {
-                    i--;
+                    i--;    // TokenList stop here temp.
                     final var production = a.getProduction();
                     int length = production.body().size();
                     NonTerminal nonTerminal = production.head();
@@ -131,6 +133,9 @@ public class SyntaxAnalyzer {
                 }
                 case Error -> {
                     System.out.println("Failed");
+                }
+                default -> {
+                    System.out.println("Error");
                 }
             }
         }
